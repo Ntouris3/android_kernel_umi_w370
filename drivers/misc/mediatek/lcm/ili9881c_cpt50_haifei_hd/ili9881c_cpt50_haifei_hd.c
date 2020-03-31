@@ -5,10 +5,33 @@
 * Supported device: CUBOT R9
 * Copyright 2019 © Rubén Espínola
  *---------------------------------------------------------------*/
+
+#include "lcm_drv.h"
 #ifndef BUILD_LK
 #include <linux/string.h>
+#include <linux/kernel.h>
 #endif
 #include "lcm_drv.h"
+#ifdef BUILD_LK
+#include <platform/upmu_common.h>
+#include <platform/mt_gpio.h>
+#include <platform/mt_i2c.h> 
+#include <platform/mt_pmic.h>
+#include <string.h>
+#elif defined(BUILD_UBOOT)
+#include <asm/arch/mt_gpio.h>
+#else
+#include <mt-plat/mt_gpio.h>
+#include <mach/gpio_const.h>
+#endif
+
+#if defined(BUILD_LK)
+#define LCM_DEBUG  printf
+#define LCM_FUNC_TRACE() printf("huyl [uboot] %s\n",__func__)
+#else
+#define LCM_DEBUG  printk
+#define LCM_FUNC_TRACE() printk("huyl [kernel] %s\n",__func__)
+#endif
 
 // ---------------------------------------------------------------------------
 //  Local Constants
