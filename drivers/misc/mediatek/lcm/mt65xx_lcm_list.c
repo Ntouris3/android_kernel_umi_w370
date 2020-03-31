@@ -52,6 +52,9 @@ LCM_DRIVER *lcm_driver_list[] = {
 #if defined(S6D7AA0_QIJING50_JDF_HD_N40)
 	&s6d7aa0_qijing50_jdf_hd_n40_lcm_drv,
 #endif
+#if defined(ILI9881C_CPT50_HAIFEI_HD)
+	&ili9881c_cpt50_haifei_hd,
+#endif
 };
 
 unsigned char lcm_name_list[][128] = {
