@@ -22,6 +22,7 @@ extern LCM_DRIVER r63350_sharp50_wsc_hd_lcm_drv;
 extern LCM_DRIVER r63315_sharp50_wsc_hd_lcm_drv;
 extern LCM_DRIVER s6d7aa0_qijing50_jdf_hd_lcm_drv;
 extern LCM_DRIVER s6d7aa0_qijing50_jdf_hd_n40_lcm_drv;
+extern LCM_DRIVER ili9881c_cpt50_haifei_hd;
 
 #ifdef BUILD_LK
 extern void mdelay(unsigned long msec);
