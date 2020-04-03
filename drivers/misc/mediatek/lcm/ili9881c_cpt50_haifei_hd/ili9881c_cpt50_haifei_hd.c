@@ -1,3 +1,10 @@
+ Ntouris3 / lcm-cubot-r9
+Code Issues 0 Pull requests 0 Projects 0 Actions Wiki Security Pulse Community
+lcm-cubot-r9/ili9881c_cpt50_haifei_hd.c
+@Ruben1863 Ruben1863 Update ili9881c_cpt50_haifei_hd.c
+e8e5441 4 hours ago
+411 lines (364 sloc)  10.1 KB
+ 
 
 /*----------------------------------------------------------------
 * Author : Rubén Espínola (ruben1863@github.com)
@@ -7,31 +14,6 @@
  *---------------------------------------------------------------*/
 
 #include "lcm_drv.h"
-#ifndef BUILD_LK
-#include <linux/string.h>
-#include <linux/kernel.h>
-#endif
-#include "lcm_drv.h"
-#ifdef BUILD_LK
-#include <platform/upmu_common.h>
-#include <platform/mt_gpio.h>
-#include <platform/mt_i2c.h> 
-#include <platform/mt_pmic.h>
-#include <string.h>
-#elif defined(BUILD_UBOOT)
-#include <asm/arch/mt_gpio.h>
-#else
-#include <mt-plat/mt_gpio.h>
-#include <mach/gpio_const.h>
-#endif
-
-#if defined(BUILD_LK)
-#define LCM_DEBUG  printf
-#define LCM_FUNC_TRACE() printf("huyl [uboot] %s\n",__func__)
-#else
-#define LCM_DEBUG  printk
-#define LCM_FUNC_TRACE() printk("huyl [kernel] %s\n",__func__)
-#endif
 
 // ---------------------------------------------------------------------------
 //  Local Constants
@@ -45,14 +27,6 @@
 #define REGFLAG_DELAY             							(0XFE)
 #define REGFLAG_END_OF_TABLE      							(0xFF)
 
-/*#ifndef TRUE
-    #define TRUE 1
-#endif
-
-#ifndef FALSE
-    #define FALSE 0
-#endif
-*/
 
 // ---------------------------------------------------------------------------
 //  Local Variables
@@ -277,7 +251,7 @@ static struct LCM_setting_table lcm_initialization_setting[] =
 	{0XD1, 1, {0X5F}},
 	{0XD2, 1, {0X76}},
 	{0XD3, 1, {0X3F}},
-	{0XFF, 3, {0X98,0X81,0X00}},
+	{0XFF, 3, {0X98,0X81}},
 	{0X35, 1, {0X00}},
 	{0X11, 1, {0X00}},
 	{REGFLAG_DELAY, 120, {}},
@@ -288,11 +262,22 @@ static struct LCM_setting_table lcm_initialization_setting[] =
 
 static struct LCM_setting_table lcm_deep_sleep_mode_in_setting[] = 
 {
-    {0x28, 1, {0x00}},
+	{0xFF, 3, {0x98, 0x81, 0x01}},
+	{0x53, 1, {0x10}},
+	{0xB3, 1, {0x3F}},
+	{0xD3, 1, {0x3F}},
+	{0xFF, 3, {0x98, 0x81, 0x04}},
+	{0x2D, 1, {0x02}},
+	{0x2F, 1, {0x01}},
 	{REGFLAG_DELAY, 120, {}},
-    {0x10, 1, {0x00}},
-    {REGFLAG_DELAY, 200, {}},
-    {REGFLAG_END_OF_TABLE, 0x00, {}}
+	{0x2F, 1, {0x00}},
+	{0xFF, 3, {0x98, 0x81}},
+	{0x2F, 1, {0x00}},
+	{0x28, 0, {0x00}},
+	{REGFLAG_DELAY, 20, {}},
+	{0x10, 0, {0x00}},
+	{REGFLAG_DELAY, 120, {}},
+	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
 static void push_table(struct LCM_setting_table *table, unsigned int count, unsigned char force_update)
@@ -326,10 +311,8 @@ static void push_table(struct LCM_setting_table *table, unsigned int count, unsi
 
 static void lcm_set_util_funcs(const LCM_UTIL_FUNCS *util)
 {
-    memcpy(&lcm_util, util, sizeof(LCM_UTIL_FUNCS));
+	memcpy(&lcm_util, util, sizeof(LCM_UTIL_FUNCS));
 }
-
-
 static void lcm_get_params(LCM_PARAMS *params)
 {
 	memset(params, 0, sizeof(LCM_PARAMS));
@@ -343,7 +326,6 @@ static void lcm_get_params(LCM_PARAMS *params)
 	params->dsi.vertical_sync_active = 8;
 	params->dsi.vertical_backporch = 16;
 	params->dsi.PLL_CLOCK = 280;
-	params->dsi.lcm_esd_check_table[0].cmd = 10;
 	params->type = 2;
 	params->dsi.data_format.format = 2;
 	params->dsi.PS = 2;
@@ -354,11 +336,8 @@ static void lcm_get_params(LCM_PARAMS *params)
 	params->dbi.te_mode = 1;
 	params->dsi.mode = 1;
 	params->dsi.clk_lp_per_line_enable = 1;
-	params->dsi.esd_check_enable = 1;
-	params->dsi.customization_esd_check_enable = 1;
-	params->dsi.lcm_esd_check_table[0].count = 1;
 	params->dbi.te_edge_polarity = 0;
-	params->dsi.data_format.color_order = 0;
+        params->dsi.data_format.color_order = 0;
 	params->dsi.data_format.trans_seq = 0;
 	params->dsi.data_format.padding = 0;
 	params->dsi.intermediat_buffer_num = 0;
@@ -367,9 +346,22 @@ static void lcm_get_params(LCM_PARAMS *params)
 	params->dsi.HS_TRAIL = 20;
 	params->dsi.horizontal_backporch = 60;
 	params->dsi.horizontal_frontporch = 60;
-	params->dsi.lcm_esd_check_table[0].para_list[0] = -100;
 	params->dsi.noncont_clock = 0;
 }
+
+
+
+
+static void lcm_suspend(void)
+{
+	push_table(lcm_deep_sleep_mode_in_setting, sizeof(lcm_deep_sleep_mode_in_setting) / sizeof(struct LCM_setting_table), 1);
+	SET_RESET_PIN(0);
+	MDELAY(20);
+}
+
+
+
+
 
 static void lcm_init(void)
 {
@@ -380,16 +372,10 @@ static void lcm_init(void)
 	SET_RESET_PIN(1);
 	MDELAY(120);
 
-    push_table(lcm_initialization_setting, sizeof(lcm_initialization_setting) / sizeof(struct LCM_setting_table), 1);
+	push_table(lcm_initialization_setting, sizeof(lcm_initialization_setting) / sizeof(struct LCM_setting_table), 1);
 }
 
 
-static void lcm_suspend(void)
-{
-	push_table(lcm_deep_sleep_mode_in_setting, sizeof(lcm_deep_sleep_mode_in_setting) / sizeof(struct LCM_setting_table), 1);
-	SET_RESET_PIN(0);
-	MDELAY(20);
-}
 
 static void lcm_resume(void)
 {
@@ -399,12 +385,15 @@ static void lcm_resume(void)
 static void lcm_init_power(void)
 {
 }
+
 static void lcm_suspend_power(void)
 {
 }
+
 static void lcm_resume_power(void)
 {
 }
+
 static unsigned int lcm_compare_id(void)
 {
 	return 1;
@@ -424,6 +413,5 @@ LCM_DRIVER ili9881c_cpt50_haifei_hd_lcm_drv =
     .compare_id     = lcm_compare_id,
     .init_power     = lcm_init_power,   
     .suspend_power  = lcm_suspend_power,
-	.resume_power   = lcm_resume_power,
+    .resume_power   = lcm_resume_power,
 };
-
