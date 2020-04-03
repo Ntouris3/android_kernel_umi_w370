@@ -1,10 +1,3 @@
- Ntouris3 / lcm-cubot-r9
-Code Issues 0 Pull requests 0 Projects 0 Actions Wiki Security Pulse Community
-lcm-cubot-r9/ili9881c_cpt50_haifei_hd.c
-@Ruben1863 Ruben1863 Update ili9881c_cpt50_haifei_hd.c
-e8e5441 4 hours ago
-411 lines (364 sloc)  10.1 KB
- 
 
 /*----------------------------------------------------------------
 * Author : Rubén Espínola (ruben1863@github.com)
